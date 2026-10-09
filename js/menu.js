@@ -48,6 +48,7 @@ function openCharacterStatusOverlay() {
   }).join("");
   const originValue = character?.origin;
   const originName = typeof originValue === "object" ? (originValue?.name || originValue?.title || "—") : originValue;
+  const characterName = character?.name || [character?.firstName, character?.familyName].filter(Boolean).join(" ") || "Unnamed Character";
   const details = [
     ["ORIGIN", originName],
     ["AGE", character?.age?.result],
@@ -55,6 +56,7 @@ function openCharacterStatusOverlay() {
     ["LUCK", character?.luck]
   ].map(([label, value]) => `<div class="status-overlay-detail"><span>${label}</span><strong>${safeStatusText(value)}</strong></div>`).join("");
   characterStatusOverlayContent.innerHTML = `
+    <div class="status-overlay-character-name">${safeStatusText(characterName)}</div>
     <div class="status-overlay-vitals">
       <div class="status-overlay-vital"><span>HP</span><strong>— / —</strong><div class="status-overlay-bar"><span class="status-overlay-bar-fill"></span></div></div>
       <div class="status-overlay-vital"><span>LVL</span><strong>—</strong><div class="status-overlay-bar"><span class="status-overlay-bar-fill"></span></div></div>

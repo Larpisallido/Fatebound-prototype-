@@ -2,163 +2,42 @@
    FATEBOUND - LOBBY
    ========================================== */
 
+const newGameButton = document.getElementById("newGameButton");
+const continueButton = document.getElementById("continueButton");
+const settingsButton = document.getElementById("settingsButton");
+const fateboundModeButton = document.getElementById("fateboundModeButton");
+const classicModeButton = document.getElementById("classicModeButton");
+const newGameBackButton = document.getElementById("newGameBackButton");
+const continueBackButton = document.getElementById("continueBackButton");
 
-/* ==========================================
-   BUTTONS
-   ========================================== */
-
-const newGameButton =
-    document.getElementById("newGameButton");
-
-const continueButton =
-    document.getElementById("continueButton");
-
-const settingsButton =
-    document.getElementById("settingsButton");
-
-const fateboundModeButton =
-    document.getElementById("fateboundModeButton");
-
-const classicModeButton =
-    document.getElementById("classicModeButton");
-
-const newGameBackButton =
-    document.getElementById("newGameBackButton");
-
-const continueBackButton =
-    document.getElementById("continueBackButton");
-
-
-/* ==========================================
-   NEW GAME
-   ========================================== */
-
-if (newGameButton) {
-
-    newGameButton.addEventListener(
-        "click",
-        showNewGame
-    );
-
-}
-
-
-/* ==========================================
-   NEW GAME BACK
-   ========================================== */
-
-if (newGameBackButton) {
-
-    newGameBackButton.addEventListener(
-        "click",
-        showLobby
-    );
-
-}
-
-
-/* ==========================================
-   FATEBOUND MODE
-   ========================================== */
+if (newGameButton) newGameButton.addEventListener("click", showNewGame);
+if (newGameBackButton) newGameBackButton.addEventListener("click", showLobby);
 
 if (fateboundModeButton) {
-
-    fateboundModeButton.addEventListener(
-        "click",
-        () => {
-            if (typeof showGameMenuButton === "function") showGameMenuButton();
-            startFateboundCreation();
-        }
-    );
-
+    fateboundModeButton.addEventListener("click", () => {
+        if (typeof showGameMenuButton === "function") showGameMenuButton();
+        startFateboundCreation();
+    });
 }
 
-
-/* ==========================================
-   CLASSIC MODE
-   ========================================== */
-
+/* Classic Mode is not implemented yet: do not save or navigate to the game. */
 if (classicModeButton) {
-
-    classicModeButton.addEventListener(
-        "click",
-        () => {
-
-            const gameData = {
-
-                mode: "Classic",
-
-                createdAt:
-                    new Date().toISOString()
-
-            };
-
-
-            saveGame(gameData);
-
-            showGame();
-
-        }
-    );
-
+    classicModeButton.addEventListener("click", () => {
+        alert("Classic Mode is a work in progress.");
+    });
 }
-
-
-/* ==========================================
-   CONTINUE
-   ========================================== */
 
 if (continueButton) {
-
-    continueButton.addEventListener(
-        "click",
-        () => {
-
-            if (hasSave()) {
-
-                showGame();
-
-            } else {
-
-                showContinue();
-
-            }
-
-        }
-    );
-
+    continueButton.addEventListener("click", () => {
+        if (hasSave()) showGame();
+        else showContinue();
+    });
 }
 
-
-/* ==========================================
-   CONTINUE BACK
-   ========================================== */
-
-if (continueBackButton) {
-
-    continueBackButton.addEventListener(
-        "click",
-        showLobby
-    );
-
-}
-
-
-/* ==========================================
-   SETTINGS
-   ========================================== */
+if (continueBackButton) continueBackButton.addEventListener("click", showLobby);
 
 if (settingsButton) {
-
-    settingsButton.addEventListener(
-        "click",
-        () => {
-
-            alert(
-                "Settings will be added later."
-            );
-
-        }
-    );
-
-      }
+    settingsButton.addEventListener("click", () => {
+        alert("Settings will be added later.");
+    });
+}
