@@ -34,12 +34,12 @@ const characterStatusLobbyButton =
    ========================================== */
 
 const statusStatNames = {
-    STR: "STRENGTH",
-    DEX: "DEXTERITY",
-    CON: "CONSTITUTION",
-    INT: "INTELLIGENCE",
-    WIS: "WISDOM",
-    CHA: "CHARISMA"
+    STR: "STR",
+    DEX: "DEX",
+    CON: "CON",
+    INT: "INT",
+    WIS: "WIS",
+    CHA: "CHA"
 };
 
 
