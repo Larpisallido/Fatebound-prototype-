@@ -90,6 +90,12 @@ const worldEndMessage =
     document.getElementById("worldEndMessage");
 
 
+const worldGameOver =
+    document.getElementById("worldGameOver");
+
+
+const worldLobbyButton =
+    document.getElementById("worldLobbyButton");
 
 
 /* ==========================================
@@ -127,9 +133,7 @@ function startWorld() {
 
 
     if (worldGameOver) {
-
         worldGameOver.classList.add("hidden");
-
     }
 
 
@@ -140,8 +144,6 @@ function startWorld() {
     if (worldChoices) {
 
         worldChoices.innerHTML = "";
-
-        worldChoices.classList.remove("hidden");
 
     }
 
@@ -294,10 +296,9 @@ function chooseWorldAction(index) {
     }
 
 
-    if (worldGameOverResult) {
+    if (worldResult) {
 
-        worldGameOverResult.textContent =
-            choice.result;
+        worldResult.classList.remove("hidden");
 
     }
 
@@ -311,69 +312,28 @@ function chooseWorldAction(index) {
         worldEndMessage.textContent =
             "THE TURN HAS ENDED.";
 
-    }
-
-
-    if (worldChoices) {
-
-        worldChoices.classList.add("hidden");
+        worldEndMessage.classList.remove("hidden");
 
     }
 
-
-    if (worldResult) {
-
-        worldResult.classList.add("hidden");
-
-    }
-
-
-    if (worldEndMessage) {
-
-        worldEndMessage.classList.add("hidden");
-
-    }
-
-
-    if (worldGameOver) {
-
-        worldGameOver.classList.remove("hidden");
-
+    if (typeof showGameOver === "function") {
+        showGameOver();
     }
 
 }
-
 
 
 /* ==========================================
-   GAME OVER ACTIONS
+   RETURN TO LOBBY
    ========================================== */
 
-if (worldViewStatusButton) {
+if (worldLobbyButton) {
 
-    worldViewStatusButton.addEventListener(
+    worldLobbyButton.addEventListener(
         "click",
         () => {
 
-            if (typeof showCharacterStatusOverlay === "function") {
-                showCharacterStatusOverlay();
-            }
-
-        }
-    );
-
-}
-
-
-if (worldEndCampaignButton) {
-
-    worldEndCampaignButton.addEventListener(
-        "click",
-        () => {
-
-            if (typeof endCampaignToLobby === "function") {
-                endCampaignToLobby();
-            }
+            showLobby();
 
         }
     );

@@ -25,6 +25,8 @@ const characterStatusStats =
 const characterStatusContinueButton =
     document.getElementById("characterStatusContinueButton");
 
+const characterStatusLobbyButton =
+    document.getElementById("characterStatusLobbyButton");
 
 
 /* ==========================================
@@ -561,7 +563,7 @@ function renderSpecialStatus() {
         <div class="status-detail-row">
             <span>ORIGIN</span>
             <strong>
-                UNKNOWN
+                100 — UNKNOWN
             </strong>
         </div>
 
@@ -735,3 +737,41 @@ if (characterStatusContinueButton) {
 }
 
 
+/* ==========================================
+   RETURN TO LOBBY
+   ========================================== */
+
+if (characterStatusLobbyButton) {
+
+    characterStatusLobbyButton.addEventListener(
+        "click",
+        () => {
+
+            resetCharacterStatus();
+
+            resetFateDetails();
+
+            resetStatPotential();
+
+            resetCharacterCreation();
+
+            showLobby();
+
+        }
+    );
+
+}
+
+
+/* ==========================================
+   NAME INPUT
+   ========================================== */
+
+if (characterFirstName) {
+
+    characterFirstName.addEventListener(
+        "input",
+        updateCharacterName
+    );
+
+}
