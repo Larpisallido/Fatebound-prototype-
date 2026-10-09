@@ -2759,3 +2759,111 @@ These overrides aim to make the layout comfortable at 100% mobile zoom.
         letter-spacing: 1.5px;
     }
 }
+
+
+
+/* Fatebound: compact mobile spacing, preserving the existing design */
+@media (max-width: 500px) {
+    .character-status-panel {
+        padding: 22px 14px 16px;
+    }
+
+    .character-status-panel > .ornament {
+        margin: 8px auto 14px;
+    }
+
+    .status-overlay-vitals {
+        gap: 10px 14px;
+    }
+
+    .status-overlay-vital {
+        gap: 5px 8px;
+    }
+
+    .status-overlay-divider {
+        margin: 12px 0;
+    }
+
+    .status-overlay-stat {
+        gap: 4px;
+        padding: 6px 1px;
+    }
+
+    .status-overlay-stat-name {
+        font-size: 8px;
+        letter-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .status-overlay-stat-value {
+        line-height: 1.1;
+    }
+
+    .status-overlay-detail {
+        min-height: 36px;
+        padding-block: 7px;
+    }
+
+    .character-status-content {
+        padding-top: 46px;
+        padding-bottom: 14px;
+    }
+
+    .character-name-section {
+        margin: 12px auto 14px;
+    }
+
+    .status-section-title {
+        margin-top: 10px;
+        margin-bottom: 6px;
+    }
+
+    .status-stat-row {
+        gap: 5px;
+        padding-block: 7px;
+    }
+
+    .status-detail-row {
+        padding-block: 7px;
+    }
+}
+
+@media (max-width: 360px) {
+    .status-overlay-stat-name {
+        font-size: 7px;
+        letter-spacing: 0;
+    }
+
+    .character-status-panel {
+        padding-inline: 10px;
+    }
+
+    .status-overlay-vitals {
+        gap: 8px;
+    }
+}
+
+@media (max-height: 700px) {
+    .character-status-panel {
+        padding-top: 18px;
+        padding-bottom: 12px;
+    }
+
+    .character-status-panel > .ornament {
+        margin-top: 7px;
+        margin-bottom: 10px;
+    }
+
+    .status-overlay-divider {
+        margin-block: 10px;
+    }
+
+    .status-overlay-stat {
+        padding-block: 5px;
+    }
+
+    .status-overlay-detail {
+        min-height: 32px;
+        padding-block: 5px;
+    }
+}
