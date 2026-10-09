@@ -74,6 +74,12 @@ const fateDetailsContinueButton =
     );
 
 
+const fateDetailsLobbyButton =
+    document.getElementById(
+        "fateDetailsLobbyButton"
+    );
+
+
 /* ==========================================
    STATE
    ========================================== */
@@ -704,3 +710,30 @@ if (fateDetailsContinueButton) {
 }
 
 
+/* ==========================================
+   RETURN TO LOBBY
+   ========================================== */
+
+if (fateDetailsLobbyButton) {
+
+    fateDetailsLobbyButton.addEventListener(
+        "click",
+        () => {
+
+            if (fateDetailRolling) {
+                return;
+            }
+
+
+            resetFateDetails();
+
+            resetStatPotential();
+
+            resetCharacterCreation();
+
+            showLobby();
+
+        }
+    );
+
+}

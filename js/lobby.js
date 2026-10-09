@@ -66,13 +66,8 @@ if (fateboundModeButton) {
     fateboundModeButton.addEventListener(
         "click",
         () => {
-
+            if (typeof showGameMenuButton === "function") showGameMenuButton();
             startFateboundCreation();
-
-            if (typeof showGameMenuButton === "function") {
-                showGameMenuButton();
-            }
-
         }
     );
 
@@ -89,14 +84,25 @@ if (classicModeButton) {
         "click",
         () => {
 
-            alert(
-                "Classic Mode is currently a Work in Progress."
-            );
+            const gameData = {
+
+                mode: "Classic",
+
+                createdAt:
+                    new Date().toISOString()
+
+            };
+
+
+            saveGame(gameData);
+
+            showGame();
 
         }
     );
 
 }
+
 
 /* ==========================================
    CONTINUE
@@ -108,12 +114,21 @@ if (continueButton) {
         "click",
         () => {
 
-            showContinue();
+            if (hasSave()) {
+
+                showGame();
+
+            } else {
+
+                showContinue();
+
+            }
 
         }
     );
 
 }
+
 
 /* ==========================================
    CONTINUE BACK

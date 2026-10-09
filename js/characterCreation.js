@@ -34,6 +34,12 @@ const originRollNumber =
 const rollStatus =
     document.getElementById("rollStatus");
 
+const characterCreationLobbyButton =
+    document.getElementById(
+        "characterCreationLobbyButton"
+    );
+
+
 /* ==========================================
    CHARACTER DATA
    ========================================== */
@@ -390,3 +396,26 @@ if (originContinueButton) {
 }
 
 
+/* ==========================================
+   RETURN TO LOBBY
+   ========================================== */
+
+if (characterCreationLobbyButton) {
+
+    characterCreationLobbyButton.addEventListener(
+        "click",
+        () => {
+
+            if (rolling) {
+                return;
+            }
+
+
+            resetCharacterCreation();
+
+            showLobby();
+
+        }
+    );
+
+}

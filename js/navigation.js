@@ -72,6 +72,8 @@ function showScreen(screen) {
 
 function showLobby() {
     showScreen(screens.lobby);
+    if (typeof hideGameMenuButton === "function") hideGameMenuButton();
+    if (typeof closeGameMenu === "function") closeGameMenu();
 }
 
 

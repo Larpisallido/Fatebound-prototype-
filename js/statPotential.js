@@ -115,6 +115,12 @@ const statPotentialContinueButton =
     );
 
 
+const statPotentialLobbyButton =
+    document.getElementById(
+        "statPotentialLobbyButton"
+    );
+
+
 /* ==========================================
    STATE
    ========================================== */
@@ -594,3 +600,28 @@ if (statPotentialContinueButton) {
 }
 
 
+/* ==========================================
+   RETURN TO LOBBY
+   ========================================== */
+
+if (statPotentialLobbyButton) {
+
+    statPotentialLobbyButton.addEventListener(
+        "click",
+        () => {
+
+            if (statRolling) {
+                return;
+            }
+
+
+            resetStatPotential();
+
+            resetCharacterCreation();
+
+            showLobby();
+
+        }
+    );
+
+           }
