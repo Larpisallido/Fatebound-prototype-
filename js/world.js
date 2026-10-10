@@ -118,6 +118,86 @@ function saveScenarioCharacter() {
     }
 }
 
+// Called by saves.js to persist the adventure alongside the character.
+function getWorldSaveState() {
+    if (!scenarioState) return null;
+    return {
+        scenarioId: scenarioState.scenarioId,
+        turn: scenarioState.turn,
+        flags: JSON.parse(JSON.stringify(scenarioState.flags || {})),
+        completed: !!scenarioState.completed,
+        turnCompleted: !!worldTurnCompleted,
+        combat: combatState ? JSON.parse(JSON.stringify(combatState)) : null,
+        resultText: worldResultText ? worldResultText.textContent : ""
+    };
+}
+
+function restoreWorldFromSave(savedWorld) {
+    const validTurn = savedWorld && Number.isInteger(savedWorld.turn) && savedWorld.turn >= 1 && savedWorld.turn <= 10;
+    if (!savedWorld || savedWorld.scenarioId !== currentScenario.id || !validTurn) {
+        startWorld();
+        return;
+    }
+
+    scenarioState = {
+        scenarioId: currentScenario.id,
+        turn: savedWorld.turn,
+        flags: savedWorld.flags && typeof savedWorld.flags === "object" ? savedWorld.flags : {},
+        completed: !!savedWorld.completed
+    };
+
+    const savedCombat = savedWorld.combat;
+    combatState = savedCombat && (savedCombat.which === 1 || savedCombat.which === 2)
+        && Number.isFinite(savedCombat.hp) && Number.isFinite(savedCombat.maxHP)
+        ? {
+            which: savedCombat.which,
+            enemyName: savedCombat.which === 1 ? "Road Lynx" : "Bandit Scout Captain",
+            maxHP: Math.max(1, Math.floor(savedCombat.maxHP)),
+            hp: Math.max(0, Math.min(Math.floor(savedCombat.maxHP), Math.floor(savedCombat.hp))),
+            damage: Math.max(1, Math.floor(Number(savedCombat.damage) || 1)),
+            xp: Math.max(0, Math.floor(Number(savedCombat.xp) || 0)),
+            guardNext: !!savedCombat.guardNext,
+            round: Math.max(0, Math.floor(Number(savedCombat.round) || 0))
+        }
+        : null;
+
+    setWorldCopy(scenarioState.turn);
+    worldTurnCompleted = !!savedWorld.turnCompleted;
+    if (typeof showGameMenuButton === "function") showGameMenuButton();
+
+    if (scenarioState.completed) {
+        if (worldChoices) worldChoices.innerHTML = "";
+        if (worldEndMessage) {
+            worldEndMessage.textContent = "THE TEN-TURN SCENARIO IS COMPLETE.";
+            worldEndMessage.classList.remove("hidden");
+        }
+        if (worldTime) worldTime.textContent = "Scenario complete";
+        showResult(savedWorld.resultText || "The Old Road test scenario is complete.");
+        if (typeof showGameOver === "function") showGameOver();
+        const endingResult = document.getElementById("worldGameOverResult");
+        if (endingResult) endingResult.textContent = savedWorld.resultText || "The Old Road test scenario is complete.";
+    } else if (combatState) {
+        if (worldDescription) worldDescription.textContent = combatState.which === 1
+            ? "A road lynx crouches low and prepares to spring. Watch your HP and stamina."
+            : "A veteran scout draws a notched blade. He studies your stance and waits for your move.";
+        renderCombatChoices();
+        if (savedWorld.resultText) showResult(savedWorld.resultText);
+    } else if (worldTurnCompleted) {
+        // Rebuild the resolved turn's Continue button without replaying its choices.
+        const turnData = OLD_ROAD_TURNS[scenarioState.turn];
+        if (turnData && worldDescription) worldDescription.textContent = turnData.description;
+        if (turnData && worldSituation) worldSituation.textContent = turnData.situation;
+        if (savedWorld.resultText) showResult(savedWorld.resultText);
+        showContinueButton(scenarioState.turn >= 10 ? "FINISH CAMPAIGN" : `CONTINUE TO TURN ${scenarioState.turn + 1}`);
+    } else {
+        renderCurrentTurn();
+        if (savedWorld.resultText) showResult(savedWorld.resultText);
+    }
+
+    if (typeof showWorld === "function") showWorld();
+    saveScenarioCharacter();
+}
+
 function makeChoiceButton(text, action, className) {
     if (!worldChoices) return null;
     const button = document.createElement("button");
@@ -169,6 +249,7 @@ function startWorld() {
     if (typeof showGameMenuButton === "function") showGameMenuButton();
     renderCurrentTurn();
     if (typeof showWorld === "function") showWorld();
+    saveScenarioCharacter();
 }
 
 function renderCurrentTurn() {
@@ -195,6 +276,7 @@ function advanceTurn(message) {
     combatState = null;
     if (scenarioState.turn > 10) scenarioState.turn = 10;
     renderCurrentTurn();
+    saveScenarioCharacter();
 }
 
 function showContinueButton(label) {
@@ -207,6 +289,7 @@ function showContinueButton(label) {
             advanceTurn();
         }
     });
+    saveScenarioCharacter();
 }
 
 function renderStoryTurn(turn) {
@@ -580,6 +663,7 @@ function renderXPTestTurn() {
             worldChoices.innerHTML = "";
             renderXPTestTurn();
         }
+        saveScenarioCharacter();
     });
     makeChoiceButton("CONTINUE TO TURN 10", () => advanceTurn());
 }
@@ -622,6 +706,7 @@ function finishCampaign(message) {
         const result = document.getElementById("worldGameOverResult");
         if (result) result.textContent = message;
     }
+    saveScenarioCharacter();
 }
 
 if (worldLobbyButton) {

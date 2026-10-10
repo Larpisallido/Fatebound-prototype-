@@ -15,6 +15,8 @@ if (newGameBackButton) newGameBackButton.addEventListener("click", showLobby);
 
 if (fateboundModeButton) {
     fateboundModeButton.addEventListener("click", () => {
+        // Starting a new character is an explicit choice to replace the old run.
+        if (typeof clearSaveGame === "function") clearSaveGame();
         if (typeof showGameMenuButton === "function") showGameMenuButton();
         startFateboundCreation();
     });
@@ -29,8 +31,25 @@ if (classicModeButton) {
 
 if (continueButton) {
     continueButton.addEventListener("click", () => {
-        if (hasSave()) showGame();
-        else showContinue();
+        const save = typeof loadGame === "function" ? loadGame() : null;
+        if (!save || !save.character) {
+            showContinue();
+            return;
+        }
+
+        // currentCharacter is a top-level lexical binding declared by characterCreation.js.
+        if (typeof currentCharacter !== "undefined") {
+            currentCharacter = save.character;
+        }
+
+        if (save.world && typeof restoreWorldFromSave === "function") {
+            restoreWorldFromSave(save.world);
+        } else if (typeof startWorld === "function") {
+            // Legacy character-only saves resume at the beginning of the scenario.
+            startWorld();
+        } else {
+            showGame();
+        }
     });
 }
 
