@@ -35,31 +35,86 @@ function showGameOver() {
 }
 function safeStatusText(value) {
   if (value === undefined || value === null || value === "") return "—";
-  return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[ch]));
+  return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 }
+
+/*
+ * Upgrade old character saves to the RPG state once. Existing origin,
+ * age, appearance, stats and potential are preserved. The migration only
+ * adds missing RPG fields and then persists the migrated save.
+ */
+function getRpgCharacterState() {
+  const character = typeof currentCharacter !== "undefined" ? currentCharacter : null;
+  if (!character) return null;
+  if (typeof window.FateboundRPG === "undefined") return character;
+
+  const wasMigrated = character.rpgCoreVersion !== window.FateboundRPG.version;
+  const state = window.FateboundRPG.createCharacterState(character);
+
+  // Preserve existing resources on already-initialized characters; a legacy
+  // save without resources receives full starting resources from the core.
+  if (wasMigrated) {
+    window.FateboundRPG.refreshDerived(state, character.hp !== undefined);
+    state.rpgCoreVersion = window.FateboundRPG.version;
+    if (typeof saveGame === "function") saveGame(state);
+    // Keep the shared in-memory object used by the existing scripts.
+    Object.keys(character).forEach(key => delete character[key]);
+    Object.assign(character, state);
+    return character;
+  }
+  return character;
+}
+
 function openCharacterStatusOverlay() {
   if (!characterStatusOverlay || !characterStatusOverlayContent) return;
-  const character = typeof currentCharacter !== "undefined" ? currentCharacter : null;
-  const stats = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
-  const statMarkup = stats.map(stat => {
-    const value = character?.initialStats?.[stat];
-    const grade = character?.potential?.[stat]?.grade;
+  const character = getRpgCharacterState();
+  if (!character) {
+    characterStatusOverlayContent.innerHTML = `<p class="status-overlay-detail">No character data is available yet.</p>`;
+    characterStatusOverlay.classList.remove("hidden");
+    return;
+  }
+
+  const core = window.FateboundRPG;
+  const derived = character.derived || core.derivedStats(character);
+  const hp = Number.isFinite(Number(character.hp)) ? Number(character.hp) : derived.maxHP;
+  const mp = Number.isFinite(Number(character.mp)) ? Number(character.mp) : derived.maxMP;
+  const stamina = Number.isFinite(Number(character.stamina)) ? Number(character.stamina) : derived.maxStamina;
+  const xp = Math.max(0, Number(character.xp) || 0);
+  const level = Math.max(1, Number(character.level) || 1);
+  const xpRequired = core.xpToNextLevel(level);
+  const hpPercent = derived.maxHP ? Math.max(0, Math.min(100, hp / derived.maxHP * 100)) : 0;
+  const xpPercent = xpRequired ? Math.max(0, Math.min(100, xp / xpRequired * 100)) : 100;
+  const statMarkup = core.coreStats.map(stat => {
+    const value = character.initialStats && character.initialStats[stat];
+    const grade = character.potential && character.potential[stat] && character.potential[stat].grade;
     return `<div class="status-overlay-stat"><span class="status-overlay-stat-name">${stat}</span><strong class="status-overlay-stat-value">${safeStatusText(value)}</strong><span class="status-overlay-stat-grade">${safeStatusText(grade)}</span></div>`;
   }).join("");
-  const originValue = character?.origin;
+
+  const originValue = character.origin;
   const originName = typeof originValue === "object" ? (originValue?.name || originValue?.title || "—") : originValue;
-  const characterName = character?.name || [character?.firstName, character?.familyName].filter(Boolean).join(" ") || "Unnamed Character";
+  const characterName = character.name || [character.firstName, character.familyName].filter(Boolean).join(" ") || "Unnamed Character";
   const details = [
     ["ORIGIN", originName],
-    ["AGE", character?.age?.result],
-    ["APPEARANCE", character?.appearance?.result],
-    ["LUCK", character?.luck]
+    ["AGE", character.age && character.age.result],
+    ["APPEARANCE", character.appearance && character.appearance.result],
+    ["CLASS", character.class && character.class.name || "Unclassed"],
+    ["XP", xpRequired ? `${xp} / ${xpRequired}` : "MAX LEVEL"],
+    ["MP", `${mp} / ${derived.maxMP}`],
+    ["STAMINA", `${stamina} / ${derived.maxStamina}`],
+    ["LUCK", character.luck]
   ].map(([label, value]) => `<div class="status-overlay-detail"><span>${label}</span><strong>${safeStatusText(value)}</strong></div>`).join("");
+
   characterStatusOverlayContent.innerHTML = `
     <div class="status-overlay-character-name">${safeStatusText(characterName)}</div>
     <div class="status-overlay-vitals">
-      <div class="status-overlay-vital"><span>HP</span><strong>— / —</strong><div class="status-overlay-bar"><span class="status-overlay-bar-fill"></span></div></div>
-      <div class="status-overlay-vital"><span>LVL</span><strong>—</strong><div class="status-overlay-bar"><span class="status-overlay-bar-fill"></span></div></div>
+      <div class="status-overlay-vital">
+        <span>HP</span><strong>${hp} / ${derived.maxHP}</strong>
+        <div class="status-overlay-bar"><span class="status-overlay-bar-fill" style="width:${hpPercent}%"></span></div>
+      </div>
+      <div class="status-overlay-vital">
+        <span>LVL ${level}</span><strong>${xpRequired ? `${Math.max(0, xpRequired - xp)} XP TO NEXT` : "MAX LEVEL"}</strong>
+        <div class="status-overlay-bar"><span class="status-overlay-bar-fill" style="width:${xpPercent}%"></span></div>
+      </div>
     </div>
     <div class="status-overlay-divider"></div>
     <div class="status-overlay-stats">${statMarkup}</div>
@@ -67,6 +122,7 @@ function openCharacterStatusOverlay() {
     <div class="status-overlay-details">${details}</div>`;
   characterStatusOverlay.classList.remove("hidden");
 }
+
 function closeCharacterStatusOverlay() {
   if (characterStatusOverlay) characterStatusOverlay.classList.add("hidden");
 }
@@ -90,7 +146,10 @@ if (gameMenuResumeButton) gameMenuResumeButton.addEventListener("click", closeGa
 if (gameMenuOverlay) gameMenuOverlay.addEventListener("click", event => { if (event.target === gameMenuOverlay) closeGameMenu(); });
 if (gameMenuViewStatusButton) gameMenuViewStatusButton.addEventListener("click", () => { closeGameMenu(); openCharacterStatusOverlay(); });
 if (gameMenuSettingsButton) gameMenuSettingsButton.addEventListener("click", () => {});
-if (gameMenuSaveButton) gameMenuSaveButton.addEventListener("click", () => {});
+if (gameMenuSaveButton) gameMenuSaveButton.addEventListener("click", () => {
+  const character = getRpgCharacterState();
+  if (character && typeof saveGame === "function") saveGame(character);
+});
 if (gameMenuLobbyButton) gameMenuLobbyButton.addEventListener("click", endCampaignToLobby);
 if (worldViewStatusButton) worldViewStatusButton.addEventListener("click", openCharacterStatusOverlay);
 if (worldEndCampaignButton) worldEndCampaignButton.addEventListener("click", endCampaignToLobby);
