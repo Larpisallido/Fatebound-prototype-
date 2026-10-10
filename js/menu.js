@@ -56,7 +56,7 @@ function getRpgCharacterState() {
   if (wasMigrated) {
     window.FateboundRPG.refreshDerived(state, character.hp !== undefined);
     state.rpgCoreVersion = window.FateboundRPG.version;
-    if (typeof saveGame === "function") saveGame(state);
+    if (typeof canSaveAdventure === "function" && canSaveAdventure() && typeof saveGame === "function") saveGame(state);
     // Keep the shared in-memory object used by the existing scripts.
     Object.keys(character).forEach(key => delete character[key]);
     Object.assign(character, state);
@@ -135,7 +135,7 @@ function endCampaignToLobby() {
   if (typeof resetStatPotential === "function") resetStatPotential();
   if (typeof resetCharacterCreation === "function") resetCharacterCreation();
   if (typeof currentCharacter !== "undefined") currentCharacter = null;
-  try { localStorage.removeItem("fatebound_save"); } catch (_) {}
+  // Keep the saved adventure so Continue can resume it from the lobby.
   const panel = document.getElementById("worldGameOver");
   if (panel) panel.classList.add("hidden");
   if (typeof showLobby === "function") showLobby();
@@ -147,8 +147,28 @@ if (gameMenuOverlay) gameMenuOverlay.addEventListener("click", event => { if (ev
 if (gameMenuViewStatusButton) gameMenuViewStatusButton.addEventListener("click", () => { closeGameMenu(); openCharacterStatusOverlay(); });
 if (gameMenuSettingsButton) gameMenuSettingsButton.addEventListener("click", () => {});
 if (gameMenuSaveButton) gameMenuSaveButton.addEventListener("click", () => {
-  const character = getRpgCharacterState();
-  if (character && typeof saveGame === "function") saveGame(character);
+  // Saving during character creation would let players reroll by reloading.
+  if (typeof canSaveAdventure !== "function" || !canSaveAdventure()) {
+    alert("Can’t save during character creation. You can save after entering the world.");
+    return;
+  }
+
+  try {
+    const character = getRpgCharacterState();
+    if (!character || typeof saveGame !== "function") {
+      alert("Unable to save: character data or the save system is unavailable.");
+      return;
+    }
+
+    if (saveGame(character)) {
+      alert("Adventure saved successfully!");
+    } else {
+      alert("Adventure could not be saved. Check browser storage settings and try again.");
+    }
+  } catch (error) {
+    console.error("Fatebound save error:", error);
+    alert("Adventure could not be saved. Check the browser console for details.");
+  }
 });
 if (gameMenuLobbyButton) gameMenuLobbyButton.addEventListener("click", endCampaignToLobby);
 if (worldViewStatusButton) worldViewStatusButton.addEventListener("click", openCharacterStatusOverlay);

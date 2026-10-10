@@ -118,6 +118,12 @@ function saveScenarioCharacter() {
     }
 }
 
+// Saving is only allowed after character creation, once the scenario has started.
+// The in-game menu uses this guard to prevent saving high rolls during creation.
+function canSaveAdventure() {
+    return !!(scenarioState && typeof currentCharacter !== "undefined" && currentCharacter);
+}
+
 // Called by saves.js to persist the adventure alongside the character.
 function getWorldSaveState() {
     if (!scenarioState) return null;

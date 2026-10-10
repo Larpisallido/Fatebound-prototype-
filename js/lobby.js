@@ -17,6 +17,8 @@ if (fateboundModeButton) {
     fateboundModeButton.addEventListener("click", () => {
         // Starting a new character is an explicit choice to replace the old run.
         if (typeof clearSaveGame === "function") clearSaveGame();
+        // Keep the in-game menu available throughout character creation.
+        // Save Game itself is guarded until the world scenario has started.
         if (typeof showGameMenuButton === "function") showGameMenuButton();
         startFateboundCreation();
     });
